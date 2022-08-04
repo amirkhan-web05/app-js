@@ -1,3 +1,5 @@
 [
-  { "id": 1, "title": "Amirkhan Magomedov", "completed": false }
+  { "id": 1, "name": "Apple", "count":1, "price":"200.00" },
+  { "id": 2, "name": "Banan", "count":1, "price":"300.00" },
+  { "id": 3, "name": "Orange", "count":1, "price":"400.00" }
 ]

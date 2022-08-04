@@ -1,0 +1,9 @@
+Quora
+
+// Создать посты
+// Создать users;
+// Редактировать профиль и создать;
+// Сделать возможность создавать сообщество create space
+
+// нужно создать querySelector, чтобы прокидывать insertAdjacentHTML
+// нужно создать createElement, чтобы прокидывать insertAdjacentElement

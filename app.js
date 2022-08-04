@@ -1,71 +1,107 @@
-const todoInput = document.querySelector('#todoInput');
-const todoList = document.querySelector('#todoList');
-const btnTodo = document.querySelector('#btnTodo');
+const cart = document.querySelector('.cart');
+const fruits = document.querySelector('.fruits');
+const info = document.querySelector('.info');
+const cartTotal = document.querySelector('#cart-total-value');
 
-let todos = [];
+let cartData = [];
 
-const renderTodo = ({ id, title, completed }) => {
-   const li = document.createElement('li');
-   li.classList.add('todo__item');
-   li.id = id;
+const updateCartTotal = () => {
+   const total = cartData.reduce((acc, item) => {
+      const price = parseFloat(item.price);
+      return (acc += price);
+   }, 0);
 
-   li.innerHTML = `
-      <span data-id='completed' class='${
-         completed ? 'todo__title todo-title--completed' : 'todo__title'
-      }'>
-         ${title}
-      </span>
-      <button data-id='remove'>Remove</button>
-   `;
+   cartTotal.innerHTML = `<h3>Total: ${total.toFixed(2)}$</h3>`;
 
-   todoList.append(li);
+   info.append(cartTotal);
 };
 
-todos.forEach((todo) => fetchTodo(todo));
+const getData = async () => {
+   try {
+      const res = await fetch('db.json');
+      const data = await res.json();
 
-const addTodo = () => {
-   const title = todoInput.value;
+      data.forEach((item) => {
+         const fruitItem = document.createElement('div');
+         fruitItem.classList.add('fruit__item');
+         fruitItem.id = item.id;
 
-   if (todoInput.value.trim() === '') return;
+         fruitItem.innerHTML = `
+            <h3 class='fruit__name'>${item.name}</h3>
+            <p class='fruit__price'>${item.price}$</p>
+            <button data-id='add' class='fruit__add'>Add</button>
+         `;
 
-   const newTodo = {
-      id: Date.now(),
-      title,
-      completed: false,
-   };
+         fruits.append(fruitItem);
+      });
 
-   renderTodo(newTodo);
-
-   todos = [...todos, newTodo];
-
-   todoInput.value = '';
+      updateCartTotal();
+   } catch (error) {
+      console.error('Error', error);
+   }
 };
 
-const removeTodo = (event) => {
+const renderCart = ({ id, name, price }) => {
+   const cartItems = document.createElement('div');
+   cartItems.classList.add('cart__item');
+   cartItems.id = id;
+
+   cartItems.innerHTML = `
+               <h1 id=${id}>${name}</h1>
+               <strong>${price}</strong>
+               <button data-id='remove' class='cart__remove'>Remove</button>
+            `;
+
+   cart.append(cartItems);
+
+   updateCartTotal();
+};
+
+cartData.forEach((cart) => renderCart(cart));
+
+const addToCart = (event) => {
+   if (event.target.dataset.id === 'add') {
+      const parentNode = event.target.closest('.fruit__item');
+      const id = Number(parentNode.id);
+      const name = parentNode.querySelector('.fruit__name').textContent;
+      const price = parentNode.querySelector('.fruit__price').textContent;
+
+      const cartItems = {
+         id,
+         name,
+         price,
+         count: 1,
+      };
+
+      const findCartItems = cartData.find((item) => item.id === id);
+
+      if (findCartItems) {
+         cartData.map((cart) => {
+            return cart.id === cartItems.id
+               ? { ...cart, count: cart.count + 1 }
+               : cart;
+         });
+      } else {
+         cartData.push(cartItems);
+
+         renderCart(cartItems);
+      }
+   }
+};
+
+const removeCart = (event) => {
    if (event.target.dataset.id === 'remove') {
-      const parentNode = event.target.closest('.todo__item');
+      const parentNode = event.target.closest('.cart__item');
       const id = Number(parentNode.id);
 
-      todos.filter((todo) => todo.id !== id);
-
+      cartData = cartData.filter((cart) => cart.id !== id);
       parentNode.remove();
+
+      updateCartTotal();
    }
 };
 
-const checkTodo = (event) => {
-   if (event.target.dataset.id === 'completed') {
-      const parentNode = event.target.closest('.todo__item');
-      const id = Number(parentNode.id);
+getData();
 
-      todos.map((todo) =>
-         todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      );
-
-      const todoTitle = parentNode.querySelector('.todo__title');
-      todoTitle.classList.toggle('todo-title--completed');
-   }
-};
-
-btnTodo.addEventListener('click', addTodo);
-todoList.addEventListener('click', removeTodo);
-todoList.addEventListener('click', checkTodo);
+fruits.addEventListener('click', addToCart);
+cart.addEventListener('click', removeCart);

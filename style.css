@@ -1,0 +1,3 @@
+.todo__title.todo__title--completed {
+  text-decoration: line-through;
+}
