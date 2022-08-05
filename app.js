@@ -8,12 +8,14 @@ let cartData = [];
 const updateCartTotal = () => {
    const total = cartData.reduce((acc, item) => {
       const price = parseFloat(item.price);
-      return (acc += price);
+      return (acc += price && price * item.count);
    }, 0);
 
    cartTotal.innerHTML = `<h3>Total: ${total.toFixed(2)}$</h3>`;
 
    info.append(cartTotal);
+
+   return total;
 };
 
 const getData = async () => {
@@ -41,14 +43,19 @@ const getData = async () => {
    }
 };
 
-const renderCart = ({ id, name, price }) => {
+const renderCart = ({ id, name, price, count }) => {
    const cartItems = document.createElement('div');
    cartItems.classList.add('cart__item');
    cartItems.id = id;
 
    cartItems.innerHTML = `
                <h1 id=${id}>${name}</h1>
-               <strong>${price}</strong>
+               <div>
+                  <button class='cart__plus' data-id='plus'>+</button>
+                  <span class='cart__count'>${count}</span>
+                  <button data-id='minus'>-</button>
+               </div>
+               <strong class='cart__price'>${price}</strong>
                <button data-id='remove' class='cart__remove'>Remove</button>
             `;
 
@@ -101,7 +108,36 @@ const removeCart = (event) => {
    }
 };
 
+const updatePriceCount = (event) => {
+   if (event.target.dataset.id === 'plus') {
+      const parentNode = event.target.closest('.cart__item');
+      const id = Number(parentNode.id);
+
+      let items = cartData.find((cart) => cart.id === id);
+
+      const cartCount = parentNode.querySelector('.cart__count');
+      cartCount.innerHTML = ++items.count;
+
+      updateCartTotal();
+   }
+
+   if (event.target.dataset.id === 'minus') {
+      const parentNode = event.target.closest('.cart__item');
+      const id = Number(parentNode.id);
+
+      let items = cartData.find((cart) => cart.id === id);
+
+      const cartCount = parentNode.querySelector('.cart__count');
+
+      cartCount.innerHTML =
+         items.count === 1 ? (items.count = 1) : (items.count -= 1);
+
+      updateCartTotal();
+   }
+};
+
 getData();
 
 fruits.addEventListener('click', addToCart);
 cart.addEventListener('click', removeCart);
+cart.addEventListener('click', updatePriceCount);
